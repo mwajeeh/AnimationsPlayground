@@ -28,6 +28,7 @@ public class IconPageIndicator extends HorizontalScrollView implements PageIndic
     private ViewPager.OnPageChangeListener mListener;
     private Runnable mIconSelector;
     private int mSelectedIndex;
+    private float percentExpanded;
 
     public IconPageIndicator(Context context) {
         super(context, null);
@@ -58,15 +59,12 @@ public class IconPageIndicator extends HorizontalScrollView implements PageIndic
     }
 
     private void animateToIcon(final int position) {
-        final View iconView = mIconsLayout.getChildAt(position);
         if (mIconSelector != null) {
             removeCallbacks(mIconSelector);
         }
         mIconSelector = new Runnable() {
             public void run() {
-                final int scrollPos = iconView.getLeft();
-                smoothScrollTo(scrollPos, 0);
-                mIconSelector = null;
+                updateScroll();
             }
         };
         post(mIconSelector);
@@ -213,13 +211,20 @@ public class IconPageIndicator extends HorizontalScrollView implements PageIndic
         int tabCount = mIconsLayout.getChildCount();
 
         //alpha can be zero
-        float alpha = (total - top) / (float) total;
-        float _1MinusAlpha = 1 - alpha;
+        percentExpanded = (total - top) / (float) total;
+        float alpha = 1 - percentExpanded;
         for (int i = 0; i < tabCount; i++) {
             View parent = mIconsLayout.getChildAt(i);
             View child = parent.findViewById(R.id.foreground);
-            ViewCompat.setAlpha(child, _1MinusAlpha);
+            ViewCompat.setAlpha(child, alpha);
         }
+        updateScroll();
+    }
+
+    private void updateScroll() {
+        int x = mIconsLayout.getWidth() / 2;
+        int scrollTo = (int) ((x * (1 - percentExpanded)) + (percentExpanded * mIconsLayout.getChildAt(mSelectedIndex).getLeft()));
+        smoothScrollTo(scrollTo, 0);
     }
 
     @Override

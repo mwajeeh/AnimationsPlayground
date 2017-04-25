@@ -10,7 +10,7 @@
         android:id="@+id/icon"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:scaleType="center"/>
+        android:scaleType="fitCenter"/>
 
     <ImageView
         android:id="@+id/foreground"
