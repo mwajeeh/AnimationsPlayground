@@ -10,6 +10,7 @@ import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -63,7 +64,7 @@ public class IconPageIndicator extends HorizontalScrollView implements PageIndic
         }
         mIconSelector = new Runnable() {
             public void run() {
-                final int scrollPos = iconView.getLeft() - (getWidth() - iconView.getWidth()) / 2;
+                final int scrollPos = iconView.getLeft();
                 smoothScrollTo(scrollPos, 0);
                 mIconSelector = null;
             }
@@ -136,17 +137,33 @@ public class IconPageIndicator extends HorizontalScrollView implements PageIndic
 
     public void notifyDataSetChanged() {
         mIconsLayout.removeAllViews();
+        boolean changePadding = true;
         IconPagerAdapter iconAdapter = (IconPagerAdapter) mViewPager.getAdapter();
         int count = iconAdapter.getCount();
         LayoutInflater inflater = LayoutInflater.from(getContext());
         for (int i = 0; i < count; i++) {
-            View parent = inflater.inflate(R.layout.indicator, mIconsLayout, false);
-            ImageView view = (ImageView) parent.findViewById(R.id.icon);
+            final View parent = inflater.inflate(R.layout.indicator, mIconsLayout, false);
+            final ImageView view = (ImageView) parent.findViewById(R.id.icon);
             //// TODO: 25/04/2017 Use ViewCompat to support pre-lollipop
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 view.setTransitionName("tab_" + i);
             }
             view.setImageResource(iconAdapter.getIconResId(i));
+            if (changePadding) {
+                //assuming that every indicator will have same size
+                changePadding = false;
+                parent.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        parent.getViewTreeObserver().removeOnPreDrawListener(this);
+                        int parentWidth = getWidth();
+                        int width = parent.getWidth();
+                        int leftRightPadding = (parentWidth - width) / 2;
+                        setPadding(leftRightPadding, getPaddingTop(), leftRightPadding, getPaddingBottom());
+                        return true;
+                    }
+                });
+            }
             mIconsLayout.addView(parent);
         }
         if (mSelectedIndex > count) {
@@ -180,6 +197,7 @@ public class IconPageIndicator extends HorizontalScrollView implements PageIndic
     }
 
     public void collapse(float top, float total) {
+
         //do not scale to 0
         float newTop = top / 1.2F;
         float scale = (total - newTop) / (float) total;
@@ -189,10 +207,11 @@ public class IconPageIndicator extends HorizontalScrollView implements PageIndic
 
         //alpha can be zero
         float alpha = (total - top) / (float) total;
+        float _1MinusAlpha = 1 - alpha;
         for (int i = 0; i < tabCount; i++) {
             View parent = mIconsLayout.getChildAt(i);
             View child = parent.findViewById(R.id.foreground);
-            ViewCompat.setAlpha(child, 1 - alpha);
+            ViewCompat.setAlpha(child, _1MinusAlpha);
         }
     }
 
