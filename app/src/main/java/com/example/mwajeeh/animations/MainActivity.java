@@ -83,18 +83,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, final int position) {
+        public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.title.setText(items.get(position).title);
             holder.image.setImageResource(items.get(position).image);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                holder.itemView.setTransitionName("tab_" + position);
-            }
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    int adapterPosition = holder.getAdapterPosition();
+                    if (adapterPosition == RecyclerView.NO_POSITION) {
+                        return;
+                    }
                     Context context = v.getContext();
                     Intent intent = new Intent(context, DetailActivity.class);
-                    intent.putExtra("position", position);
+                    intent.putExtra("position", adapterPosition);
                     //// TODO: 25/04/2017 Use ActivityOptionsCompat to support pre-lollipop
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
@@ -109,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
                         context.startActivity(intent, bundle);
                     } else {
                         context.startActivity(intent);
-
                     }
                 }
             });
