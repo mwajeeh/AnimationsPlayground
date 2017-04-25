@@ -165,6 +165,13 @@ public class IconPageIndicator extends HorizontalScrollView implements PageIndic
                 });
             }
             mIconsLayout.addView(parent);
+
+            parent.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mViewPager.setCurrentItem(mIconsLayout.indexOfChild(parent));
+                }
+            });
         }
         if (mSelectedIndex > count) {
             mSelectedIndex = count - 1;
