@@ -19,15 +19,14 @@ import android.view.Window;
 import android.widget.TextView;
 
 import com.viewpagerindicator.IconPagerAdapter;
-import com.viewpagerindicator.PageIndicator;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DetailActivity extends AppCompatActivity {
 
-    private PageIndicator indicator;
-
+    private IconPageIndicator indicator;
+    private int mPosition;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,21 +35,27 @@ public class DetailActivity extends AppCompatActivity {
             getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
         }
         setContentView(R.layout.activity_detail);
-
+        mPosition = getIntent().getIntExtra("position", 0);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         final ViewPager pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(new IconAdapter(this, getSupportFragmentManager()));
-        indicator = (PageIndicator) findViewById(R.id.indicator);
-        indicator.setViewPager(pager);
-        pager.setCurrentItem(getIntent().getIntExtra("position", 0), false);
+        indicator = (IconPageIndicator) findViewById(R.id.indicator);
+        indicator.setViewPager(pager,mPosition);
+        pager.setCurrentItem(mPosition, false);
         supportPostponeEnterTransition();
         pager.post(new Runnable() {
             @Override
             public void run() {
                 supportStartPostponedEnterTransition();
+            }
+        });
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                supportFinishAfterTransition();
             }
         });
     }
