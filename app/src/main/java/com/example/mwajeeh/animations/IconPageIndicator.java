@@ -23,7 +23,6 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 //modified version of https://github.com/JakeWharton/ViewPagerIndicator/blob/master/library/src/com/viewpagerindicator/IconPageIndicator.java
 public class IconPageIndicator extends HorizontalScrollView implements PageIndicator {
 	private LinearLayout mIconsLayout;
-	private Context mContext;
 	private ViewPager mViewPager;
 	private ViewPager.OnPageChangeListener mListener;
 	private Runnable mIconSelector;
@@ -33,26 +32,22 @@ public class IconPageIndicator extends HorizontalScrollView implements PageIndic
 
 	public IconPageIndicator(Context context) {
 		super(context, null);
-		this.mContext = context;
 		init();
 	}
 
 	public IconPageIndicator(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		this.mContext = context;
 		init();
 	}
 
 	public IconPageIndicator(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		this.mContext = context;
 		init();
 	}
 
 	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 	public IconPageIndicator(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
 		super(context, attrs, defStyleAttr, defStyleRes);
-		this.mContext = context;
 		init();
 	}
 
@@ -104,6 +99,24 @@ public class IconPageIndicator extends HorizontalScrollView implements PageIndic
 		if (mListener != null) {
 			mListener.onPageScrolled(arg0, arg1, arg2);
 		}
+
+
+		int tabCount = mIconsLayout.getChildCount();
+		if (arg0 < tabCount - 1) {
+			View midView = mIconsLayout.getChildAt(arg0);
+			View rightView = mIconsLayout.getChildAt(arg0 + 1);
+
+			View midForeground = midView.findViewById(R.id.foreground);
+			View midIcon = midView.findViewById(R.id.icon);
+			View rightVoreground = rightView.findViewById(R.id.foreground);
+			View rightIcon = rightView.findViewById(R.id.icon);
+			scaleView(1f - .2f * arg1, midForeground, midIcon);
+			scaleView(.8f + .2f * arg1, rightVoreground, rightIcon);
+			alphaView(1f - .5f * arg1, midIcon);
+			alphaView(.5f + .5f * arg1, rightIcon);
+
+		}
+
 	}
 
 	@Override
@@ -210,13 +223,11 @@ public class IconPageIndicator extends HorizontalScrollView implements PageIndic
 
 			if (isSelected) {
 				animateToIcon(item);
-				scaleView(foreground, 1f);
-				scaleView(icon, 1f);
+				scaleView(1f, foreground, icon);
 				ViewCompat.setAlpha(icon, 1f);
 				foreground.setBackgroundDrawable(ContextCompat.getDrawable(getContext(), R.drawable.fg_white));
 			} else {
-				scaleView(foreground, 0.8f);
-				scaleView(icon, .8f);
+				scaleView(0.8f, foreground, icon);
 				ViewCompat.setAlpha(icon, 0.5f);
 				foreground.setBackgroundDrawable(ContextCompat.getDrawable(getContext(), R.drawable.fg_gray));
 			}
@@ -250,9 +261,17 @@ public class IconPageIndicator extends HorizontalScrollView implements PageIndic
 		updateScroll();
 	}
 
-	private void scaleView(View view, float value) {
-		ViewCompat.setScaleX(view, value);
-		ViewCompat.setScaleY(view, value);
+	private void scaleView(float value, View... views) {
+		for (View v : views) {
+			ViewCompat.setScaleX(v, value);
+			ViewCompat.setScaleY(v, value);
+		}
+	}
+
+	private void alphaView(float value, View... views) {
+		for (View v : views) {
+			ViewCompat.setAlpha(v, value);
+		}
 	}
 
 	private void updateScroll() {
@@ -264,6 +283,7 @@ public class IconPageIndicator extends HorizontalScrollView implements PageIndic
 	@Override
 	public void setOnPageChangeListener(ViewPager.OnPageChangeListener listener) {
 		mListener = listener;
+
 	}
 
 }
